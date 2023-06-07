@@ -3,14 +3,6 @@ let sampleNames;
 let samplesMetadata;
 let samplesSamples;
 
-// d3.json(url).then(function(data) {
-//     let sampleNames = data.names;
-//     let samplesMetadata = data.metadata;
-//     let samplesSamples = data.samples;
-//     // console.log(samplesSamples);
-// });
-
-
 /*
 JSON has 3 items
  names
@@ -25,8 +17,7 @@ JSON has 3 items
      "bbtype": str
      "wfreq": float
  samples
-     data for each individual
-             - All 3 are arrays that should have the same length
+     data for each individual - All 3 are arrays have the same length
      "otu_ids": Array of OTU id ints
      "sample_values": Array of OTU values (count of OTU???)
      "otu_labels": Array of OTU string labels
@@ -55,17 +46,16 @@ function initialSetup(individual) {
     // use == instead of === because value my be number or string type
     let individualData = samplesSamples.filter(sample => (sample.id == individual.toString()))[0];
     let individualMetadata = samplesMetadata.filter(meta => (meta.id == individual))[0];
-    
-    // console.log(individualData);
 
     // Individual Metadata
     setMetadata(individual);
 
-    // Charts
+    // Create Charts
     let singleSampleIds = individualData.otu_ids;
     let singleSampleValues = individualData.sample_values;
     let singleSampleLabels = individualData.otu_labels;
 
+    // Bar Chart
     let barTrace = [{
         x: singleSampleValues.slice(0, 10).reverse(),
         y: singleSampleIds.slice(0, 10).map(ids => `OTU ${ids}`).reverse(),
@@ -82,6 +72,7 @@ function initialSetup(individual) {
     };
     Plotly.newPlot("bar", barTrace, barLayout)
 
+    // Bubble Chart
     let bubbleTrace = [{
         x: singleSampleIds,
         y: singleSampleValues,
@@ -101,6 +92,7 @@ function initialSetup(individual) {
     };
     Plotly.newPlot("bubble", bubbleTrace, bubbleLayout);
 
+    // Gauge Chart
     let gaugeTrace = [{
         value: individualMetadata.wfreq,
         type: "indicator",
@@ -134,7 +126,6 @@ function initialSetup(individual) {
         title: "<b>Belly Button Washing Frequency</b><br>Scrubs per Week",
     };
     Plotly.plot("gauge", gaugeTrace, gaugeLayout);
-
 };
 
 function setMetadata(individual) {
@@ -143,40 +134,36 @@ function setMetadata(individual) {
 
     metadataDiv.selectAll("p").remove();  // remove existing <p> elements to prepare for new ones
     metadataDiv.selectAll("p")
-               .data(Object.entries(individualMetadata))  // returns an array of [key, value] pairs
+               .data(Object.entries(individualMetadata))  // bind Array of [key, value] pairs
                .enter()
                .append("p")
                .text(d => `${d[0]}: ${d[1]}`);
 };
 
 function updateCharts(individual) {
-    console.log("Change and Update", individual);
+    // Filter original json data for new individual id
     let individualData = samplesSamples.filter(sample => (sample.id == individual.toString()))[0];
     let individualMetadata = samplesMetadata.filter(meta => (meta.id == individual))[0];
 
-    console.log(individualData);
-
+    // update charts with restyle()
     let singleSampleIds = individualData.otu_ids;
     let singleSampleValues = individualData.sample_values;
     let singleSampleLabels = individualData.otu_labels;
 
-    console.log(singleSampleIds);
-    console.log(singleSampleValues);
-
     let barUpdate = {
-        x: singleSampleValues.slice(0, 10).reverse(),
-        y: singleSampleIds.slice(0, 10).map(ids => `OTU ${ids}`).reverse(),
-        text: singleSampleLabels.slice(0, 10).reverse(),
+        x: [singleSampleValues.slice(0, 10).reverse()],
+        y: [singleSampleIds.slice(0, 10).map(ids => `OTU ${ids}`).reverse()],
+        text: [singleSampleLabels.slice(0, 10).reverse()],
     };
     console.log(barUpdate);
     Plotly.restyle("bar", barUpdate);
 
     let bubbleUpdate = {
-        x: singleSampleIds,
-        y: singleSampleValues,
-        text: singleSampleLabels,
-       'marker.size': singleSampleValues,
-       'marker.color': singleSampleIds,
+        x: [singleSampleIds],
+        y: [singleSampleValues],
+        text: [singleSampleLabels],
+       'marker.size': [singleSampleValues],
+       'marker.color': [singleSampleIds],
     };
     Plotly.restyle("bubble", bubbleUpdate);
 
@@ -188,12 +175,13 @@ function updateCharts(individual) {
 
 function optionChanged(value) {
     console.log("Value changed to:", value);
-
     setMetadata(value);
     updateCharts(value);
 };
 
+// load the charts for the first time
 init();
+
 /* Dark Charts
 plot_bgcolor:"black",
 paper_bgcolor:"#111",
