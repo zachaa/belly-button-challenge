@@ -1,1 +1,3 @@
-# Challenge 15 - JavaScript, D3, Plotly
+# Challenge 14 - JavaScript, D3, Plotly
+
+![Website Preview](images/website.png)
