@@ -1,8 +1,3 @@
-const url = "https://2u-data-curriculum-team.s3.amazonaws.com/dataviz-classroom/v1.1/14-Interactive-Web-Visualizations/02-Homework/samples.json";
-let sampleNames;
-let samplesMetadata;
-let samplesSamples;
-
 /*
 JSON has 3 items
  names
@@ -23,6 +18,12 @@ JSON has 3 items
      "otu_labels": Array of OTU string labels
 */
 
+const url = "https://2u-data-curriculum-team.s3.amazonaws.com/dataviz-classroom/v1.1/14-Interactive-Web-Visualizations/02-Homework/samples.json";
+// values will be set after JSON is loaded
+let sampleNames;
+let samplesMetadata;
+let samplesSamples;
+
 function init() {
     d3.json(url).then(function(data) {
         sampleNames = data.names;
@@ -32,7 +33,9 @@ function init() {
         // set values into dropDown
         let dropDown = d3.select("#selDataset");
         for (i =0; i < sampleNames.length; i++) {
-            dropDown.append("option").text(sampleNames[i]).attr("value", sampleNames[i])
+            dropDown.append("option")
+                    .text(sampleNames[i])
+                    .attr("value", sampleNames[i])
         }
 
         // initialSetup(949);  // three values, use for testing
@@ -41,7 +44,6 @@ function init() {
 }
 
 function initialSetup(individual) {
-
     // values are already sorted by `sample_values` in original json
     // use == instead of === because value my be number or string type
     let individualData = samplesSamples.filter(sample => (sample.id == individual.toString()))[0];
@@ -123,7 +125,6 @@ function initialSetup(individual) {
                 {range: [8, 9], color: "#52db20"},
                 {range: [9, 10], color: "#00d70a"},
                 ],
-            
         },
     }];
     let gaugeLayout = {
@@ -136,6 +137,7 @@ function setMetadata(individual) {
     let individualMetadata = samplesMetadata.filter(meta => (meta.id == individual))[0];
     let metadataDiv = d3.select("#sample-metadata");
 
+    // update the metadata by removing and re-adding <p> elements
     metadataDiv.selectAll("p").remove();  // remove existing <p> elements to prepare for new ones
     metadataDiv.selectAll("p")
                .data(Object.entries(individualMetadata))  // bind Array of [key, value] pairs
@@ -185,15 +187,3 @@ function optionChanged(value) {
 
 // load the charts for the first time
 init();
-
-/* Dark Charts
-plot_bgcolor:"black",
-paper_bgcolor:"#111",
-font: {color: "white"},
-yaxis: {tickcolor: "white",
-        gridcolor: "#CCC",
-        zerolinecolor: "yellow"},
-xaxis: {tickcolor: "white",
-        gridcolor: "#CCC",
-        zerolinecolor: "blue"},
-*/
