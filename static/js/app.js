@@ -10,37 +10,6 @@ let samplesSamples;
 //     // console.log(samplesSamples);
 // });
 
-/* {
-    "names": ["A", "B", "C"],
-    "metadata": [{
-        "id": 949,
-        "ethnicity": "Caucasian",
-        "gender": "F",
-        "age": 51.0,
-        "location": "Durham/NC",
-        "bbtype": "I",
-        "wfreq": 3.0}],
-    "samples": [
-        {
-        "id": "949",
-        "otu_ids": [2419, 944, 1795],
-        "sample_values": [8, 4, 3],
-        "otu_labels": [
-            "Bacteria;Firmicutes;Clostridia;Clostridiales;IncertaeSedisXI;Anaerococcus",
-            "Bacteria;Actinobacteria;Actinobacteria;Actinomycetales;Corynebacteriaceae;Corynebacterium",
-            "Bacteria;Firmicutes;Bacilli;Bacillales;Staphylococcaceae;Staphylococcus"
-        ]
-        },
-        {
-        "id": "943",
-        "otu_ids": [ 1795],
-        "sample_values": [2],
-        "otu_labels": [
-            "Bacteria;Firmicutes;Bacilli;Bacillales;Staphylococcaceae;Staphylococcus"
-        ]
-        }
-    ]
-}; */
 
 /*
 JSON has 3 items
@@ -63,7 +32,6 @@ JSON has 3 items
      "otu_labels": Array of OTU string labels
 */
 
-
 function init() {
     d3.json(url).then(function(data) {
         sampleNames = data.names;
@@ -81,15 +49,14 @@ function init() {
     });
 }
 
-
-init();
-
 function initialSetup(individual) {
 
     // values are already sorted by `sample_values` in original json
+    // use == instead of === because value my be number or string type
     let individualData = samplesSamples.filter(sample => (sample.id == individual.toString()))[0];
-    let individualMetadata = samplesMetadata.filter(meta => (meta.id == individual));
-    console.log(individualData);
+    let individualMetadata = samplesMetadata.filter(meta => (meta.id == individual))[0];
+    
+    // console.log(individualData);
 
     // Individual Metadata
     setMetadata(individual);
@@ -108,13 +75,17 @@ function initialSetup(individual) {
         orientation: "h",
     }];
     let barLayout = {
-        title: "Bar Chart",
+        title: "Top 10 Samples",
+        margin: {t: 30, b: 40},
+        xaxis: {title: "Sample Values"},
+        yaxis: {title: "Samples"},
     };
     Plotly.newPlot("bar", barTrace, barLayout)
 
     let bubbleTrace = [{
         x: singleSampleIds,
         y: singleSampleValues,
+        text: singleSampleLabels,
         mode: 'markers',
         marker: {
             size: singleSampleValues,
@@ -123,35 +94,48 @@ function initialSetup(individual) {
         },
     }];
     let bubbleLayout = {
-        title: "Bubble Chart",
+        title: "Values per OTU ID",
+        margin: {t: 30, b: 40, l: 50, r: 10, pad: 6},
+        xaxis: {title: "OTU ID"},
+        yaxis: {title: "Sample Values"},
     };
     Plotly.newPlot("bubble", bubbleTrace, bubbleLayout);
 
-    console.log("wfreq:", individualMetadata[0].wfreq);
-
     let gaugeTrace = [{
-        value: individualMetadata[0].wfreq,
+        value: individualMetadata.wfreq,
         type: "indicator",
         mode: "gauge+number",
         gauge: {
-            axis: {range: [null, 10]},
-            bar: {color: "#eedd00"}, // replace  or add needle
+            axis: {dtick: 1,
+                   range: [null, 10],
+                   tickcolor: "black",
+                   ticks: "inside",},
+            bar: {color: "#ee8844",
+                  thickness: 0.5}, // replace  or add needle?
             bgcolor: "white",
             borderwidth: 1,
             bordercolor: "black",
             steps: [
-                { range: [0, 2], color: "lightgray" },
-                { range: [2, 10], color: "gray" },
+                {range: [0, 1], color: "#ffffa8"},
+                {range: [1, 2], color: "#f1fa95"},
+                {range: [2, 3], color: "#e2f583"},
+                {range: [3, 4], color: "#d1f172"},
+                {range: [4, 5], color: "#beec61"},
+                {range: [5, 6], color: "#a9e851"},
+                {range: [6, 7], color: "#92e441"},
+                {range: [7, 8], color: "#76e031"},
+                {range: [8, 9], color: "#52db20"},
+                {range: [9, 10], color: "#00d70a"},
                 ],
+            
         },
     }];
     let gaugeLayout = {
-        title: "Belly Button Washing Frequency",
+        title: "<b>Belly Button Washing Frequency</b><br>Scrubs per Week",
     };
     Plotly.plot("gauge", gaugeTrace, gaugeLayout);
 
 };
-
 
 function setMetadata(individual) {
     let individualMetadata = samplesMetadata.filter(meta => (meta.id == individual))[0];
@@ -165,27 +149,51 @@ function setMetadata(individual) {
                .text(d => `${d[0]}: ${d[1]}`);
 };
 
+function updateCharts(individual) {
+    console.log("Change and Update", individual);
+    let individualData = samplesSamples.filter(sample => (sample.id == individual.toString()))[0];
+    let individualMetadata = samplesMetadata.filter(meta => (meta.id == individual))[0];
+
+    console.log(individualData);
+
+    let singleSampleIds = individualData.otu_ids;
+    let singleSampleValues = individualData.sample_values;
+    let singleSampleLabels = individualData.otu_labels;
+
+    console.log(singleSampleIds);
+    console.log(singleSampleValues);
+
+    let barUpdate = {
+        x: singleSampleValues.slice(0, 10).reverse(),
+        y: singleSampleIds.slice(0, 10).map(ids => `OTU ${ids}`).reverse(),
+        text: singleSampleLabels.slice(0, 10).reverse(),
+    };
+    console.log(barUpdate);
+    Plotly.restyle("bar", barUpdate);
+
+    let bubbleUpdate = {
+        x: singleSampleIds,
+        y: singleSampleValues,
+        text: singleSampleLabels,
+       'marker.size': singleSampleValues,
+       'marker.color': singleSampleIds,
+    };
+    Plotly.restyle("bubble", bubbleUpdate);
+
+    let gaugeUpdate = {
+        value: individualMetadata.wfreq,
+    };
+    Plotly.restyle("gauge", gaugeUpdate);
+}
 
 function optionChanged(value) {
     console.log("Value changed to:", value);
 
     setMetadata(value);
+    updateCharts(value);
 };
 
-// d3.selectAll("#selDataset").on("change", setData);
-
-// Bar Chart
-// id = #bar
-
-// Bubble Chart
-// id = #bubble
-
-// Sample MetaData
-// id = #sample-metadata
-
-// BONUS: Gauge Chart
-// id = #gauge
-
+init();
 /* Dark Charts
 plot_bgcolor:"black",
 paper_bgcolor:"#111",
