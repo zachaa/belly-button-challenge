@@ -55,6 +55,8 @@ function initialSetup(individual) {
     let singleSampleValues = individualData.sample_values;
     let singleSampleLabels = individualData.otu_labels;
 
+    let config = {displayModeBar: false,};  // hide the Plotly toolbar
+
     // Bar Chart
     let barTrace = [{
         x: singleSampleValues.slice(0, 10).reverse(),
@@ -67,10 +69,12 @@ function initialSetup(individual) {
     let barLayout = {
         title: "Top 10 Samples",
         margin: {t: 30, b: 40},
-        xaxis: {title: "Sample Values"},
-        yaxis: {title: "Samples"},
+        xaxis: {title: "Sample Values",
+                fixedrange: true},
+        yaxis: {title: "Samples",
+                fixedrange: true},
     };
-    Plotly.newPlot("bar", barTrace, barLayout)
+    Plotly.newPlot("bar", barTrace, barLayout, config)
 
     // Bubble Chart
     let bubbleTrace = [{
@@ -90,7 +94,7 @@ function initialSetup(individual) {
         xaxis: {title: "OTU ID"},
         yaxis: {title: "Sample Values"},
     };
-    Plotly.newPlot("bubble", bubbleTrace, bubbleLayout);
+    Plotly.newPlot("bubble", bubbleTrace, bubbleLayout, config);
 
     // Gauge Chart
     let gaugeTrace = [{
@@ -125,7 +129,7 @@ function initialSetup(individual) {
     let gaugeLayout = {
         title: "<b>Belly Button Washing Frequency</b><br>Scrubs per Week",
     };
-    Plotly.plot("gauge", gaugeTrace, gaugeLayout);
+    Plotly.plot("gauge", gaugeTrace, gaugeLayout, config);
 };
 
 function setMetadata(individual) {
