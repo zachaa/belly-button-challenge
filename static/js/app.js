@@ -76,11 +76,9 @@ function init() {
             dropDown.append("option").text(sampleNames[i]).attr("value", sampleNames[i])
         }
 
-        // initialSetup(949);
-        initialSetup(940);
+        // initialSetup(949);  // three values, use for testing
+        initialSetup(940);  // many values (first in `names`)
     });
-
-    
 }
 
 
@@ -156,12 +154,22 @@ function initialSetup(individual) {
 
 
 function setMetadata(individual) {
+    let individualMetadata = samplesMetadata.filter(meta => (meta.id == individual))[0];
+    let metadataDiv = d3.select("#sample-metadata");
 
+    metadataDiv.selectAll("p").remove();  // remove existing <p> elements to prepare for new ones
+    metadataDiv.selectAll("p")
+               .data(Object.entries(individualMetadata))  // returns an array of [key, value] pairs
+               .enter()
+               .append("p")
+               .text(d => `${d[0]}: ${d[1]}`);
 };
 
 
 function optionChanged(value) {
     console.log("Value changed to:", value);
+
+    setMetadata(value);
 };
 
 // d3.selectAll("#selDataset").on("change", setData);
@@ -177,3 +185,15 @@ function optionChanged(value) {
 
 // BONUS: Gauge Chart
 // id = #gauge
+
+/* Dark Charts
+plot_bgcolor:"black",
+paper_bgcolor:"#111",
+font: {color: "white"},
+yaxis: {tickcolor: "white",
+        gridcolor: "#CCC",
+        zerolinecolor: "yellow"},
+xaxis: {tickcolor: "white",
+        gridcolor: "#CCC",
+        zerolinecolor: "blue"},
+*/
